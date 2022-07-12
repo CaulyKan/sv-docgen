@@ -1,0 +1,288 @@
+SourceText
+ Description
+  ModuleDeclaration
+   ModuleDeclarationAnsi
+    ModuleAnsiHeader
+     ModuleKeyword
+      Keyword
+       Token: 'module' @ line:2
+     ModuleIdentifier
+      Identifier
+       SimpleIdentifier
+        Token: 'test' @ line:2
+     ListOfPortDeclarations
+      Symbol
+       Token: '(' @ line:2
+      AnsiPortDeclaration
+       AnsiPortDeclarationNet
+        NetPortHeaderOrInterfacePortHeader
+         NetPortHeader
+          PortDirection
+           Keyword
+            Token: 'input' @ line:2
+          NetPortType
+           NetPortTypeDataType
+            NetType
+             Keyword
+              Token: 'wire' @ line:2
+            DataTypeOrImplicit
+             ImplicitDataType
+              PackedDimension
+               PackedDimensionRange
+                Symbol
+                 Token: '[' @ line:2
+                ConstantRange
+                 ConstantExpression
+                  ConstantPrimary
+                   PrimaryLiteral
+                    Number
+                     IntegralNumber
+                      DecimalNumber
+                       UnsignedNumber
+                        Token: '9' @ line:2
+                 Symbol
+                  Token: ':' @ line:2
+                 ConstantExpression
+                  ConstantPrimary
+                   PrimaryLiteral
+                    Number
+                     IntegralNumber
+                      DecimalNumber
+                       UnsignedNumber
+                        Token: '0' @ line:2
+                Symbol
+                 Token: ']' @ line:2
+        PortIdentifier
+         Identifier
+          SimpleIdentifier
+           Token: 'a' @ line:2
+        UnpackedDimension
+         UnpackedDimensionRange
+          Symbol
+           Token: '[' @ line:2
+          ConstantRange
+           ConstantExpression
+            ConstantPrimary
+             PrimaryLiteral
+              Number
+               IntegralNumber
+                DecimalNumber
+                 UnsignedNumber
+                  Token: '0' @ line:2
+           Symbol
+            Token: ':' @ line:2
+           ConstantExpression
+            ConstantPrimary
+             PrimaryLiteral
+              Number
+               IntegralNumber
+                DecimalNumber
+                 UnsignedNumber
+                  Token: '4' @ line:2
+          Symbol
+           Token: ']' @ line:2
+      Symbol
+       Token: ',' @ line:2
+      AnsiPortDeclaration
+       AnsiPortDeclarationVariable
+        PortIdentifier
+         Identifier
+          SimpleIdentifier
+           Token: 'b' @ line:2
+      Symbol
+       Token: ',' @ line:2
+      AnsiPortDeclaration
+       AnsiPortDeclarationNet
+        NetPortHeaderOrInterfacePortHeader
+         NetPortHeader
+          PortDirection
+           Keyword
+            Token: 'inout' @ line:2
+          NetPortType
+           NetPortTypeDataType
+            DataTypeOrImplicit
+             ImplicitDataType
+        PortIdentifier
+         Identifier
+          SimpleIdentifier
+           Token: 'c' @ line:2
+      Symbol
+       Token: ')' @ line:2
+     Symbol
+      Token: ';' @ line:2
+    Keyword
+     Token: 'endmodule' @ line:4
+ Description
+  ModuleDeclaration
+   ModuleDeclarationNonansi
+    ModuleNonansiHeader
+     ModuleKeyword
+      Keyword
+       Token: 'module' @ line:6
+     ModuleIdentifier
+      Identifier
+       SimpleIdentifier
+        Token: 'test2' @ line:6
+     ListOfPorts
+      Symbol
+       Token: '(' @ line:6
+      Port
+       PortNonNamed
+        PortExpression
+         PortReference
+          PortIdentifier
+           Identifier
+            SimpleIdentifier
+             Token: 'a' @ line:6
+          ConstantSelect
+           ConstantBitSelect
+      Symbol
+       Token: ',' @ line:6
+      Port
+       PortNonNamed
+        PortExpression
+         PortReference
+          PortIdentifier
+           Identifier
+            SimpleIdentifier
+             Token: 'b' @ line:6
+          ConstantSelect
+           ConstantBitSelect
+      Symbol
+       Token: ',' @ line:6
+      Port
+       PortNonNamed
+        PortExpression
+         PortReference
+          PortIdentifier
+           Identifier
+            SimpleIdentifier
+             Token: 'c' @ line:6
+          ConstantSelect
+           ConstantBitSelect
+      Symbol
+       Token: ')' @ line:6
+     Symbol
+      Token: ';' @ line:6
+    ModuleItem
+     PortDeclaration
+      PortDeclarationInput
+       InputDeclaration
+        InputDeclarationNet
+         Keyword
+          Token: 'input' @ line:7
+         NetPortType
+          NetPortTypeDataType
+           DataTypeOrImplicit
+            ImplicitDataType
+         ListOfPortIdentifiers
+          PortIdentifier
+           Identifier
+            SimpleIdentifier
+             Token: 'a' @ line:7
+          Symbol
+           Token: ',' @ line:7
+          PortIdentifier
+           Identifier
+            SimpleIdentifier
+             Token: 'c' @ line:7
+     Symbol
+      Token: ';' @ line:7
+    ModuleItem
+     NonPortModuleItem
+      ModuleOrGenerateItem
+       ModuleOrGenerateItemModuleItem
+        ModuleCommonItem
+         ModuleOrGenerateItemDeclaration
+          PackageOrGenerateItemDeclaration
+           NetDeclaration
+            NetDeclarationNetType
+             NetType
+              Keyword
+               Token: 'wire' @ line:8
+             DataTypeOrImplicit
+              ImplicitDataType
+             ListOfNetDeclAssignments
+              NetDeclAssignment
+               NetIdentifier
+                Identifier
+                 SimpleIdentifier
+                  Token: 'a' @ line:8
+             Symbol
+              Token: ';' @ line:8
+    ModuleItem
+     PortDeclaration
+      PortDeclarationInput
+       InputDeclaration
+        InputDeclarationNet
+         Keyword
+          Token: 'input' @ line:9
+         NetPortType
+          NetPortTypeDataType
+           DataTypeOrImplicit
+            DataType
+             DataTypeVector
+              IntegerVectorType
+               Keyword
+                Token: 'logic' @ line:9
+              PackedDimension
+               PackedDimensionRange
+                Symbol
+                 Token: '[' @ line:9
+                ConstantRange
+                 ConstantExpression
+                  ConstantPrimary
+                   PrimaryLiteral
+                    Number
+                     IntegralNumber
+                      DecimalNumber
+                       UnsignedNumber
+                        Token: '7' @ line:9
+                 Symbol
+                  Token: ':' @ line:9
+                 ConstantExpression
+                  ConstantPrimary
+                   PrimaryLiteral
+                    Number
+                     IntegralNumber
+                      DecimalNumber
+                       UnsignedNumber
+                        Token: '0' @ line:9
+                Symbol
+                 Token: ']' @ line:9
+         ListOfPortIdentifiers
+          PortIdentifier
+           Identifier
+            SimpleIdentifier
+             Token: 'b' @ line:9
+          UnpackedDimension
+           UnpackedDimensionRange
+            Symbol
+             Token: '[' @ line:9
+            ConstantRange
+             ConstantExpression
+              ConstantPrimary
+               PrimaryLiteral
+                Number
+                 IntegralNumber
+                  DecimalNumber
+                   UnsignedNumber
+                    Token: '3' @ line:9
+             Symbol
+              Token: ':' @ line:9
+             ConstantExpression
+              ConstantPrimary
+               PrimaryLiteral
+                Number
+                 IntegralNumber
+                  DecimalNumber
+                   UnsignedNumber
+                    Token: '0' @ line:9
+            Symbol
+             Token: ']' @ line:9
+     Symbol
+      Token: ';' @ line:9
+    Keyword
+     Token: 'endmodule' @ line:10
+
+parse succeeded: "example/test.sv"
