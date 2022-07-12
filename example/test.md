@@ -1,6 +1,8 @@
 # Modules
 
-## c
+## module test
+
+
 
 ### Ports
 
@@ -10,12 +12,15 @@
 | b |  |  |  |  |
 | c | inout |  |  |  |
 
-## b
+## module test2
+
+this is test2
 
 ### Ports
 
 | name | direction | type | dimensions | brief |
 | ---- | --------- | ---- | ---------- | ----- |
-| a | input |  |  |  |
+| a | input |  |  | this is port a |
 | c | input |  |  |  |
-| b | input | logic[7:0] | [3:0] |  |
+| b | input | logic[7:0] | [3:0] |  this is port b |
+

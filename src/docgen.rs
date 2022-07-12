@@ -112,17 +112,43 @@ impl CommentDocument {
         match self {
             CommentDocument::Module {
                 name,
-                brief,
                 ports,
                 params,
                 comment,
-            } => CommentDocument::Module {
-                name: name.clone(),
-                brief: brief.clone(),
-                ports: ports.clone(),
-                params: params.clone(),
-                comment: comment.clone(),
-            },
+                ..
+            } => {
+                // let brief = comment.iter().fold(String::new(), |acc, x| match x {
+                //     CommentItem::Brief(s) => acc + "\n" + s,
+                //     _ => acc,
+                // });
+                let mut brief = Vec::new();
+                let mut ports = ports.clone();
+                let mut params = params.clone();
+                let mut comments = Vec::new();
+                for c in comment {
+                    match c {
+                        CommentItem::Brief(s) => brief.push(s.clone()),
+                        CommentItem::Port { name, desc } => {
+                            if let Some(p) = ports.iter_mut().find(|x| &x.name == name) {
+                                p.comment = desc.clone();
+                            }
+                        }
+                        CommentItem::Param { name, desc } => {
+                            if let Some(p) = params.iter_mut().find(|x| &x.name == name) {
+                                p.comment = desc.clone();
+                            }
+                        }
+                        _ => comments.push(c),
+                    }
+                }
+                CommentDocument::Module {
+                    name: name.clone(),
+                    brief: brief.join("\n"),
+                    ports: ports.clone(),
+                    params: params.clone(),
+                    comment: comment.clone(),
+                }
+            }
             _ => self.clone(),
         }
     }
@@ -381,9 +407,11 @@ impl Docgen {
             match x {
                 RefNode::SimpleIdentifier(x) => {
                     location = Some(x.nodes.0);
+                    break;
                 }
                 RefNode::EscapedIdentifier(x) => {
                     location = Some(x.nodes.0);
+                    break;
                 }
                 _ => (),
             }

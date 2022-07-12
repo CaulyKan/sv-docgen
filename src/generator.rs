@@ -26,7 +26,8 @@ impl DocgenGenerator for MarkdownGenerator {
                         params,
                         comment,
                     } => {
-                        result.push_str(format!("## {}\n\n", name).as_str());
+                        result.push_str(format!("## module {}\n\n", name).as_str());
+                        result.push_str(format!("{}\n\n", brief).as_str());
                         if ports.len() > 0 {
                             result.push_str("### Ports\n\n");
                             result.push_str("| name | direction | type | dimensions | brief |\n");

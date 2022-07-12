@@ -50,6 +50,8 @@ fn main() {
         result.append(&mut docgen.parse_tree());
     }
 
+    let result = result.iter().map(|x| x.refine()).collect();
+
     let md_str = MarkdownGenerator::generate(result);
     if let Some(output) = opt.output {
         fs::write(output, md_str).unwrap();
