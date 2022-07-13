@@ -7,6 +7,7 @@ use std::env;
 use std::error::Error;
 use std::fmt;
 use std::fs;
+use std::future::pending;
 use std::hash::Hash;
 use std::ops::DerefMut;
 use std::path::PathBuf;
@@ -17,10 +18,12 @@ use sv_parser::unwrap_node;
 use sv_parser::AnsiPortDeclaration;
 use sv_parser::AnsiPortDeclarationNet;
 use sv_parser::Comment;
+use sv_parser::DataTypeOrImplicit;
 use sv_parser::Define;
 use sv_parser::Locate;
 use sv_parser::NetPortHeaderOrInterfacePortHeader;
 use sv_parser::NodeEvent;
+use sv_parser::ParamAssignment;
 use sv_parser::RefNode;
 use sv_parser::RefNodes;
 use sv_parser::SyntaxTree;
@@ -41,7 +44,9 @@ pub struct SvPort {
 #[derive(Debug, Clone)]
 pub struct SvParam {
     pub name: String,
-    pub default: String,
+    pub param_type: Option<String>,
+    pub default: Option<String>,
+    pub dimensions: Option<String>,
     pub comment: String,
 }
 
@@ -151,6 +156,22 @@ impl CommentDocument {
             }
             _ => self.clone(),
         }
+    }
+}
+
+trait GetBrief {
+    fn get_brief(&self) -> String;
+}
+impl GetBrief for Vec<CommentItem> {
+    fn get_brief(&self) -> String {
+        let briefs: Vec<String> = self
+            .iter()
+            .filter_map(|x| match x {
+                CommentItem::Brief(s) => Some(s.clone()),
+                _ => None,
+            })
+            .collect();
+        briefs.join("\n")
     }
 }
 
@@ -382,6 +403,41 @@ impl Docgen {
                     RefNode::Comment(x) => {
                         let mut comment_items = parse_comment(self.get_str(x).as_str());
                         pending_items.append(&mut comment_items);
+                    }
+                    RefNode::ParameterDeclarationParam(x) => {
+                        let param_type = if let DataTypeOrImplicit::DataType(dt) = x.nodes.1.clone()
+                        {
+                            Some(self.get_str(&dt))
+                        } else {
+                            None
+                        };
+                        let assignment0 = vec![&x.nodes.2.nodes.0.nodes.0];
+                        let assignments: Vec<&ParamAssignment> =
+                            x.nodes.2.nodes.0.nodes.1.iter().map(|x| &x.1).collect();
+                        let mut new_params: Vec<SvParam> = assignment0
+                            .iter()
+                            .chain(assignments.iter())
+                            .map(|x| SvParam {
+                                name: self.get_str(&x.nodes.0),
+                                dimensions: Some(self.get_str(&x.nodes.1)),
+                                default: x.nodes.2.as_ref().map(|x| self.get_str(&x.1)),
+                                param_type: param_type.clone(),
+                                comment: pending_items.get_brief(),
+                            })
+                            .collect();
+
+                        if let Some(item) = doc_stack
+                            .iter_mut()
+                            .rfind(|x| matches!(x, CommentDocument::Module { .. }))
+                        {
+                            match item {
+                                CommentDocument::Module { params, .. } => {
+                                    params.append(&mut new_params);
+                                }
+                                _ => (),
+                            }
+                        }
+                        pending_items.clear();
                     }
                     _ => {
                         //pending_items.clear();

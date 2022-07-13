@@ -5,32 +5,32 @@ SourceText
     ModuleAnsiHeader
      ModuleKeyword
       Keyword
-       Token: 'module' @ line:2
+       Token: 'module' @ line:4
      ModuleIdentifier
       Identifier
        SimpleIdentifier
-        Token: 'test' @ line:2
+        Token: 'test' @ line:4
      ListOfPortDeclarations
       Symbol
-       Token: '(' @ line:2
+       Token: '(' @ line:4
       AnsiPortDeclaration
        AnsiPortDeclarationNet
         NetPortHeaderOrInterfacePortHeader
          NetPortHeader
           PortDirection
            Keyword
-            Token: 'input' @ line:2
+            Token: 'input' @ line:4
           NetPortType
            NetPortTypeDataType
             NetType
              Keyword
-              Token: 'wire' @ line:2
+              Token: 'wire' @ line:4
             DataTypeOrImplicit
              ImplicitDataType
               PackedDimension
                PackedDimensionRange
                 Symbol
-                 Token: '[' @ line:2
+                 Token: '[' @ line:4
                 ConstantRange
                  ConstantExpression
                   ConstantPrimary
@@ -39,9 +39,9 @@ SourceText
                      IntegralNumber
                       DecimalNumber
                        UnsignedNumber
-                        Token: '9' @ line:2
+                        Token: '9' @ line:4
                  Symbol
-                  Token: ':' @ line:2
+                  Token: ':' @ line:4
                  ConstantExpression
                   ConstantPrimary
                    PrimaryLiteral
@@ -49,17 +49,17 @@ SourceText
                      IntegralNumber
                       DecimalNumber
                        UnsignedNumber
-                        Token: '0' @ line:2
+                        Token: '0' @ line:4
                 Symbol
-                 Token: ']' @ line:2
+                 Token: ']' @ line:4
         PortIdentifier
          Identifier
           SimpleIdentifier
-           Token: 'a' @ line:2
+           Token: 'a' @ line:4
         UnpackedDimension
          UnpackedDimensionRange
           Symbol
-           Token: '[' @ line:2
+           Token: '[' @ line:4
           ConstantRange
            ConstantExpression
             ConstantPrimary
@@ -68,9 +68,9 @@ SourceText
                IntegralNumber
                 DecimalNumber
                  UnsignedNumber
-                  Token: '0' @ line:2
+                  Token: '0' @ line:4
            Symbol
-            Token: ':' @ line:2
+            Token: ':' @ line:4
            ConstantExpression
             ConstantPrimary
              PrimaryLiteral
@@ -78,26 +78,26 @@ SourceText
                IntegralNumber
                 DecimalNumber
                  UnsignedNumber
-                  Token: '4' @ line:2
+                  Token: '4' @ line:4
           Symbol
-           Token: ']' @ line:2
+           Token: ']' @ line:4
       Symbol
-       Token: ',' @ line:2
+       Token: ',' @ line:4
       AnsiPortDeclaration
        AnsiPortDeclarationVariable
         PortIdentifier
          Identifier
           SimpleIdentifier
-           Token: 'b' @ line:2
+           Token: 'b' @ line:4
       Symbol
-       Token: ',' @ line:2
+       Token: ',' @ line:4
       AnsiPortDeclaration
        AnsiPortDeclarationNet
         NetPortHeaderOrInterfacePortHeader
          NetPortHeader
           PortDirection
            Keyword
-            Token: 'inout' @ line:2
+            Token: 'inout' @ line:4
           NetPortType
            NetPortTypeDataType
             DataTypeOrImplicit
@@ -105,27 +105,27 @@ SourceText
         PortIdentifier
          Identifier
           SimpleIdentifier
-           Token: 'c' @ line:2
+           Token: 'c' @ line:4
       Symbol
-       Token: ')' @ line:2
+       Token: ')' @ line:4
      Symbol
-      Token: ';' @ line:2
+      Token: ';' @ line:4
     Keyword
-     Token: 'endmodule' @ line:4
+     Token: 'endmodule' @ line:6
  Description
   ModuleDeclaration
    ModuleDeclarationNonansi
     ModuleNonansiHeader
      ModuleKeyword
       Keyword
-       Token: 'module' @ line:6
+       Token: 'module' @ line:14
      ModuleIdentifier
       Identifier
        SimpleIdentifier
-        Token: 'test2' @ line:6
+        Token: 'test2' @ line:14
      ListOfPorts
       Symbol
-       Token: '(' @ line:6
+       Token: '(' @ line:14
       Port
        PortNonNamed
         PortExpression
@@ -133,11 +133,11 @@ SourceText
           PortIdentifier
            Identifier
             SimpleIdentifier
-             Token: 'a' @ line:6
+             Token: 'a' @ line:14
           ConstantSelect
            ConstantBitSelect
       Symbol
-       Token: ',' @ line:6
+       Token: ',' @ line:14
       Port
        PortNonNamed
         PortExpression
@@ -145,11 +145,11 @@ SourceText
           PortIdentifier
            Identifier
             SimpleIdentifier
-             Token: 'b' @ line:6
+             Token: 'b' @ line:14
           ConstantSelect
            ConstantBitSelect
       Symbol
-       Token: ',' @ line:6
+       Token: ',' @ line:14
       Port
        PortNonNamed
         PortExpression
@@ -157,20 +157,20 @@ SourceText
           PortIdentifier
            Identifier
             SimpleIdentifier
-             Token: 'c' @ line:6
+             Token: 'c' @ line:14
           ConstantSelect
            ConstantBitSelect
       Symbol
-       Token: ')' @ line:6
+       Token: ')' @ line:14
      Symbol
-      Token: ';' @ line:6
+      Token: ';' @ line:14
     ModuleItem
      PortDeclaration
       PortDeclarationInput
        InputDeclaration
         InputDeclarationNet
          Keyword
-          Token: 'input' @ line:7
+          Token: 'input' @ line:15
          NetPortType
           NetPortTypeDataType
            DataTypeOrImplicit
@@ -179,15 +179,15 @@ SourceText
           PortIdentifier
            Identifier
             SimpleIdentifier
-             Token: 'a' @ line:7
+             Token: 'a' @ line:15
           Symbol
-           Token: ',' @ line:7
+           Token: ',' @ line:15
           PortIdentifier
            Identifier
             SimpleIdentifier
-             Token: 'c' @ line:7
+             Token: 'c' @ line:15
      Symbol
-      Token: ';' @ line:7
+      Token: ';' @ line:15
     ModuleItem
      NonPortModuleItem
       ModuleOrGenerateItem
@@ -199,7 +199,7 @@ SourceText
             NetDeclarationNetType
              NetType
               Keyword
-               Token: 'wire' @ line:8
+               Token: 'wire' @ line:16
              DataTypeOrImplicit
               ImplicitDataType
              ListOfNetDeclAssignments
@@ -207,16 +207,16 @@ SourceText
                NetIdentifier
                 Identifier
                  SimpleIdentifier
-                  Token: 'a' @ line:8
+                  Token: 'a' @ line:16
              Symbol
-              Token: ';' @ line:8
+              Token: ';' @ line:16
     ModuleItem
      PortDeclaration
       PortDeclarationInput
        InputDeclaration
         InputDeclarationNet
          Keyword
-          Token: 'input' @ line:9
+          Token: 'input' @ line:17
          NetPortType
           NetPortTypeDataType
            DataTypeOrImplicit
@@ -224,11 +224,11 @@ SourceText
              DataTypeVector
               IntegerVectorType
                Keyword
-                Token: 'logic' @ line:9
+                Token: 'logic' @ line:17
               PackedDimension
                PackedDimensionRange
                 Symbol
-                 Token: '[' @ line:9
+                 Token: '[' @ line:17
                 ConstantRange
                  ConstantExpression
                   ConstantPrimary
@@ -237,9 +237,9 @@ SourceText
                      IntegralNumber
                       DecimalNumber
                        UnsignedNumber
-                        Token: '7' @ line:9
+                        Token: '7' @ line:17
                  Symbol
-                  Token: ':' @ line:9
+                  Token: ':' @ line:17
                  ConstantExpression
                   ConstantPrimary
                    PrimaryLiteral
@@ -247,18 +247,18 @@ SourceText
                      IntegralNumber
                       DecimalNumber
                        UnsignedNumber
-                        Token: '0' @ line:9
+                        Token: '0' @ line:17
                 Symbol
-                 Token: ']' @ line:9
+                 Token: ']' @ line:17
          ListOfPortIdentifiers
           PortIdentifier
            Identifier
             SimpleIdentifier
-             Token: 'b' @ line:9
+             Token: 'b' @ line:17
           UnpackedDimension
            UnpackedDimensionRange
             Symbol
-             Token: '[' @ line:9
+             Token: '[' @ line:17
             ConstantRange
              ConstantExpression
               ConstantPrimary
@@ -267,9 +267,9 @@ SourceText
                  IntegralNumber
                   DecimalNumber
                    UnsignedNumber
-                    Token: '3' @ line:9
+                    Token: '3' @ line:17
              Symbol
-              Token: ':' @ line:9
+              Token: ':' @ line:17
              ConstantExpression
               ConstantPrimary
                PrimaryLiteral
@@ -277,12 +277,149 @@ SourceText
                  IntegralNumber
                   DecimalNumber
                    UnsignedNumber
-                    Token: '0' @ line:9
+                    Token: '0' @ line:17
             Symbol
-             Token: ']' @ line:9
+             Token: ']' @ line:17
      Symbol
-      Token: ';' @ line:9
+      Token: ';' @ line:17
+    ModuleItem
+     NonPortModuleItem
+      ModuleOrGenerateItem
+       ModuleOrGenerateItemModuleItem
+        ModuleCommonItem
+         ModuleOrGenerateItemDeclaration
+          PackageOrGenerateItemDeclaration
+           ParameterDeclaration
+            ParameterDeclarationParam
+             Keyword
+              Token: 'parameter' @ line:20
+             DataTypeOrImplicit
+              ImplicitDataType
+             ListOfParamAssignments
+              ParamAssignment
+               ParameterIdentifier
+                Identifier
+                 SimpleIdentifier
+                  Token: 'A' @ line:20
+               UnpackedDimension
+                UnpackedDimensionRange
+                 Symbol
+                  Token: '[' @ line:20
+                 ConstantRange
+                  ConstantExpression
+                   ConstantPrimary
+                    PrimaryLiteral
+                     Number
+                      IntegralNumber
+                       DecimalNumber
+                        UnsignedNumber
+                         Token: '0' @ line:20
+                  Symbol
+                   Token: ':' @ line:20
+                  ConstantExpression
+                   ConstantPrimary
+                    PrimaryLiteral
+                     Number
+                      IntegralNumber
+                       DecimalNumber
+                        UnsignedNumber
+                         Token: '5' @ line:20
+                 Symbol
+                  Token: ']' @ line:20
+               Symbol
+                Token: '=' @ line:20
+               ConstantParamExpression
+                ConstantMintypmaxExpression
+                 ConstantExpression
+                  ConstantPrimary
+                   PrimaryLiteral
+                    Number
+                     IntegralNumber
+                      DecimalNumber
+                       UnsignedNumber
+                        Token: '0' @ line:20
+           Symbol
+            Token: ';' @ line:20
+    ModuleItem
+     NonPortModuleItem
+      ModuleOrGenerateItem
+       ModuleOrGenerateItemModuleItem
+        ModuleCommonItem
+         ModuleOrGenerateItemDeclaration
+          PackageOrGenerateItemDeclaration
+           ParameterDeclaration
+            ParameterDeclarationParam
+             Keyword
+              Token: 'parameter' @ line:22
+             DataTypeOrImplicit
+              DataType
+               DataTypeAtom
+                IntegerAtomType
+                 Keyword
+                  Token: 'int' @ line:22
+             ListOfParamAssignments
+              ParamAssignment
+               ParameterIdentifier
+                Identifier
+                 SimpleIdentifier
+                  Token: 'B' @ line:22
+           Symbol
+            Token: ';' @ line:22
+    ModuleItem
+     NonPortModuleItem
+      ModuleOrGenerateItem
+       ModuleOrGenerateItemModuleItem
+        ModuleCommonItem
+         ModuleOrGenerateItemDeclaration
+          PackageOrGenerateItemDeclaration
+           ParameterDeclaration
+            ParameterDeclarationParam
+             Keyword
+              Token: 'parameter' @ line:23
+             DataTypeOrImplicit
+              ImplicitDataType
+             ListOfParamAssignments
+              ParamAssignment
+               ParameterIdentifier
+                Identifier
+                 SimpleIdentifier
+                  Token: 'C' @ line:23
+           Symbol
+            Token: ';' @ line:23
+    ModuleItem
+     NonPortModuleItem
+      ModuleOrGenerateItem
+       ModuleOrGenerateItemModuleItem
+        ModuleCommonItem
+         ModuleOrGenerateItemDeclaration
+          PackageOrGenerateItemDeclaration
+           LocalParameterDeclaration
+            LocalParameterDeclarationParam
+             Keyword
+              Token: 'localparam' @ line:25
+             DataTypeOrImplicit
+              ImplicitDataType
+             ListOfParamAssignments
+              ParamAssignment
+               ParameterIdentifier
+                Identifier
+                 SimpleIdentifier
+                  Token: 'C' @ line:25
+               Symbol
+                Token: '=' @ line:25
+               ConstantParamExpression
+                ConstantMintypmaxExpression
+                 ConstantExpression
+                  ConstantPrimary
+                   PrimaryLiteral
+                    Number
+                     IntegralNumber
+                      DecimalNumber
+                       UnsignedNumber
+                        Token: '1' @ line:25
+           Symbol
+            Token: ';' @ line:25
     Keyword
-     Token: 'endmodule' @ line:10
+     Token: 'endmodule' @ line:26
 
 parse succeeded: "example/test.sv"

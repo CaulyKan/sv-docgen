@@ -3,9 +3,11 @@ use generator::{DocgenGenerator, MarkdownGenerator};
 use std::{collections::HashMap, fs, path::PathBuf};
 use structopt::StructOpt;
 use sv_parser::{Define, DefineText};
+
 mod comment_parser;
 mod docgen;
 mod generator;
+mod numbered_list;
 
 #[derive(StructOpt)]
 struct Opt {
