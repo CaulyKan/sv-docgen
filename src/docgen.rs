@@ -483,11 +483,3 @@ impl Docgen {
         self.tree.get_str(node).unwrap_or("").trim().to_string()
     }
 }
-
-#[test]
-fn test_parse_tree() {
-    let input = "/** @brief this is test */module test(input wire[1:0] a,b,c); endmodule";
-    let docgen = Docgen::new(input, &HashMap::new(), &vec![]).unwrap();
-    println!("{:#?}", docgen.parse_tree());
-    assert!(false);
-}

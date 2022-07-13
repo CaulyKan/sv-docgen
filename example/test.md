@@ -1,8 +1,8 @@
-# Modules
+# 1. Modules
 
-## module test
+## 1.1. module test
 
-### Ports
+### 1.1.1. Ports
 
 | name | direction | type | dimensions | brief |
 | ---- | --------- | ---- | ---------- | ----- |
@@ -10,11 +10,11 @@
 | b |  |  |  |  this is port b |
 | c | inout |  |  |  |
 
-## module test2
+## 1.1. module test2
 
 this is test2
 
-### Parameters
+### 1.1.1. Parameters
 
 | name | default | type | dimensions | brief |
 | ---- | ------- | ---- | ---------- | ----- |
@@ -22,7 +22,7 @@ this is test2
 | B |  | int |  | this is B  |
 | C |  |  |  |  this is C |
 
-### Ports
+### 1.1.2. Ports
 
 | name | direction | type | dimensions | brief |
 | ---- | --------- | ---- | ---------- | ----- |
