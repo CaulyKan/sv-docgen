@@ -480,5 +480,52 @@ SourceText
             Token: ';' @ line:26
     Keyword
      Token: 'endmodule' @ line:27
+ Description
+  ModuleDeclaration
+   ModuleDeclarationAnsi
+    ModuleAnsiHeader
+     ModuleKeyword
+      Keyword
+       Token: 'module' @ line:29
+     ModuleIdentifier
+      Identifier
+       SimpleIdentifier
+        Token: 'test3' @ line:29
+     ListOfPortDeclarations
+      Symbol
+       Token: '(' @ line:29
+      Symbol
+       Token: ')' @ line:29
+     Symbol
+      Token: ';' @ line:29
+    NonPortModuleItem
+     ModuleOrGenerateItem
+      ModuleOrGenerateItemModuleItem
+       ModuleCommonItem
+        ModuleOrGenerateItemDeclaration
+         PackageOrGenerateItemDeclaration
+          TaskDeclaration
+           Keyword
+            Token: 'task' @ line:31
+           TaskBodyDeclaration
+            TaskBodyDeclarationWithPort
+             TaskIdentifier
+              Identifier
+               SimpleIdentifier
+                Token: 'my_task' @ line:31
+             Symbol
+              Token: '(' @ line:31
+             TfPortList
+              TfPortItem
+               DataTypeOrImplicit
+                ImplicitDataType
+             Symbol
+              Token: ')' @ line:31
+             Symbol
+              Token: ';' @ line:31
+             Keyword
+              Token: 'endtask' @ line:32
+    Keyword
+     Token: 'endmodule' @ line:34
 
 parse succeeded: "example/test.sv"

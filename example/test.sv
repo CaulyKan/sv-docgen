@@ -8,9 +8,19 @@ endmodule
 
 /**
  * @brief this is test2
+ * @note some notes
+ * more notes
+ * 
+ * and more notes
+ * 
+ * @author huikan
  * @port a this is port a
  * @port b: this is port b
  * @param C: this is C
+ *
+ * @example 
+ *   assign a = b;
+ *   test2 u_test(a,b,c);
  */
 module test2(a,b,c);
     input a,c;
@@ -24,4 +34,11 @@ module test2(a,b,c);
     parameter C;
 
     localparam C = 1;
+endmodule
+
+module test3();
+
+    task my_task();
+    endtask
+
 endmodule

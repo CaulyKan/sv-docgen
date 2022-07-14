@@ -1,11 +1,10 @@
 use nom::{
     branch::alt,
     bytes::complete::{is_a, is_not, tag, take_until},
-    character::complete::multispace0,
     combinator::opt,
     multi::many0,
     sequence::{delimited, terminated},
-    IResult,
+    AsChar, IResult, InputTakeAtPosition,
 };
 pub type Span<'a> = nom_locate::LocatedSpan<&'a str>;
 
@@ -75,12 +74,31 @@ impl CommentItem {
     }
 }
 
+pub fn whitespace<T>(input: T) -> IResult<T, T>
+where
+    T: InputTakeAtPosition,
+    <T as InputTakeAtPosition>::Item: AsChar + Clone,
+{
+    input.split_at_position(|item| {
+        let c = item.clone().as_char();
+        !(c == ' ' || c == '\t')
+    })
+}
 fn parse_comment_item_plain(s: Span) -> IResult<Span, CommentItem> {
-    let (s, _) = opt(delimited(multispace0, opt(tag("*")), multispace0))(s)?;
+    let (s, _) = many0(alt((tag(" "), tag("*"), tag("\t"))))(s)?;
     let (s, plain) = is_not("\n")(s)?;
     let (s, _) = opt(tag("\n"))(s)?;
+    let (s, _) = many0(alt((tag(" "), tag("\t"))))(s)?;
 
     Ok((s, CommentItem::Plain(plain.to_string())))
+}
+
+fn parse_comment_item_empty(s: Span) -> IResult<Span, CommentItem> {
+    let (s, _) = many0(alt((tag(" "), tag("*"), tag("\t"))))(s)?;
+    let (s, _) = tag("\n")(s)?;
+    let (s, _) = many0(alt((tag(" "), tag("\t"))))(s)?;
+
+    Ok((s, CommentItem::Plain("".to_string())))
 }
 
 fn parse_command_item_simple<'a>(
@@ -88,10 +106,11 @@ fn parse_command_item_simple<'a>(
     p: impl Fn(String) -> CommentItem + 'a,
 ) -> Box<dyn Fn(Span) -> IResult<Span, CommentItem> + 'a> {
     Box::new(move |s: Span| {
-        let (s, _) = opt(delimited(multispace0, opt(tag("*")), multispace0))(s)?;
-        let (s, _) = (terminated(tag(cmd), alt((tag(" "), tag(":")))))(s)?;
+        let (s, _) = many0(alt((tag(" "), tag("*"), tag("\t"))))(s)?;
+        let (s, _) = (terminated(tag(cmd), alt((tag(" "), tag(":"), tag("\t")))))(s)?;
         let (s, text) = opt(is_not("\n"))(s)?;
         let (s, _) = opt(tag("\n"))(s)?;
+        let (s, _) = many0(alt((tag(" "), tag("\t"))))(s)?;
         let comment_line = text.unwrap_or(Span::from(""));
         Ok((s, p(comment_line.to_string())))
     })
@@ -113,23 +132,25 @@ fn parse_command_item_pair<'a>(
     p: impl Fn(String, String) -> CommentItem + 'a,
 ) -> Box<dyn Fn(Span) -> IResult<Span, CommentItem> + 'a> {
     Box::new(move |s: Span| {
-        let (s, _) = opt(delimited(multispace0, opt(tag("*")), multispace0))(s)?;
+        let (s, _) = many0(alt((tag(" "), tag("*"), tag("\t"))))(s)?;
         let (s, _) = (terminated(tag(cmd), tag(" ")))(s)?;
         let (s, name) = terminated(identifier, alt((tag(" "), tag(":"))))(s)?;
         let (s, desc) = opt(is_not("\n"))(s)?;
         let (s, _) = opt(tag("\n"))(s)?;
+        let (s, _) = many0(alt((tag(" "), tag("\t"))))(s)?;
         let desc = desc.unwrap_or(Span::from(""));
         Ok((s, p(name, desc.to_string())))
     })
 }
 
 fn parse_command_item_transit(s: Span) -> IResult<Span, CommentItem> {
-    let (s, _) = opt(delimited(multispace0, opt(tag("*")), multispace0))(s)?;
+    let (s, _) = many0(alt((tag(" "), tag("*"), tag("\t"))))(s)?;
     let (s, _) = tag("@")(s)?;
-    let (s, from) = terminated(identifier, delimited(multispace0, tag("->"), multispace0))(s)?;
+    let (s, from) = terminated(identifier, delimited(whitespace, tag("->"), whitespace))(s)?;
     let (s, to) = terminated(identifier, alt((tag(" "), tag(":"))))(s)?;
     let (s, desc) = opt(is_not("\n"))(s)?;
     let (s, _) = opt(tag("\n"))(s)?;
+    let (s, _) = many0(alt((tag(" "), tag("\t"))))(s)?;
     Ok((
         s,
         CommentItem::Transit {
@@ -157,6 +178,7 @@ fn comment_item(s: Span) -> IResult<Span, CommentItem> {
         parse_command_item_pair("@state", |x, y| CommentItem::State { name: x, desc: y }),
         parse_command_item_transit,
         parse_comment_item_plain,
+        parse_comment_item_empty,
     ))(s)
 }
 
@@ -180,11 +202,13 @@ fn post_process(v: Vec<CommentItem>) -> Vec<CommentItem> {
     for item in v {
         match item {
             CommentItem::Plain(x) => {
-                if let Some(last) = result.last_mut() {
-                    last.append_str("\n");
-                    last.append_str(x.as_str());
-                } else {
-                    result.push(CommentItem::Brief(x));
+                if x != "" {
+                    if let Some(last) = result.last_mut() {
+                        last.append_str("\n");
+                        last.append_str(x.as_str());
+                    } else {
+                        result.push(CommentItem::Brief(x));
+                    }
                 }
             }
             _ => {
@@ -290,6 +314,30 @@ fn test_parse_comment6() {
                 to: "c".to_string(),
                 desc: "transit2".to_string()
             },
+        ]
+    );
+}
+
+#[test]
+fn test_parse_comment7() {
+    let input = "/**
+    * @note some notes
+    * more notes
+    * 
+    * and more notes
+    * 
+    * @author a
+    */";
+    assert_eq!(
+        parse_comment(input),
+        vec![
+            CommentItem::Note(
+                "some notes
+more notes
+and more notes"
+                    .to_string()
+            ),
+            CommentItem::Author("a".to_string())
         ]
     );
 }

@@ -1,4 +1,10 @@
-use crate::{docgen::SvFile, numbered_list::NumberedList};
+use std::path::Path;
+
+use crate::{
+    comment_parser::{parse_comment, CommentItem},
+    docgen::SvFile,
+    numbered_list::NumberedList,
+};
 
 pub trait DocgenGenerator {
     fn generate(items: Vec<SvFile>) -> String;
@@ -16,7 +22,10 @@ impl DocgenGenerator for MarkdownGenerator {
                 format!(
                     "# {}. File {}\n\n",
                     index.recall_and_go_downstairs(),
-                    file.name
+                    Path::new(file.name.as_str())
+                        .file_name()
+                        .and_then(|x| x.to_str())
+                        .unwrap_or("")
                 )
                 .as_str(),
             );
@@ -36,6 +45,8 @@ impl DocgenGenerator for MarkdownGenerator {
                             result.push_str(format!("{}\n\n", brief).as_str());
                         }
                     }
+                    let s = format_comment(&module.comment);
+                    result.push_str(s.as_str());
                     if module.params.len() > 0 {
                         result.push_str(
                             format!("### {}. Parameters\n\n", index.recall_and_step_forward())
@@ -79,4 +90,45 @@ impl DocgenGenerator for MarkdownGenerator {
         }
         result
     }
+}
+
+fn format_comment(comments: &Vec<CommentItem>) -> String {
+    let mut result = String::new();
+
+    for comment in comments {
+        match comment {
+            CommentItem::Author(s) => result.push_str(format!("**Author:** {}\n\n", s).as_str()),
+            CommentItem::Example(s) => {
+                if s.contains("\n") {
+                    result.push_str(format!("**Example:** \n```\n{}\n```\n\n", s).as_str());
+                } else {
+                    result.push_str(format!("**Example:** `{}`\n\n", s).as_str());
+                }
+            }
+            CommentItem::Note(s) => {
+                if s.contains("\n") {
+                    result.push_str("> **Note:**\n>\n");
+                    s.split("\n")
+                        .map(|x| "> ".to_owned() + x + "\n>\n")
+                        .for_each(|x| result.push_str(x.as_str()));
+                    result.push_str("\n");
+                } else {
+                    result.push_str(format!("> **Note:** {}\n\n", s).as_str())
+                }
+            }
+            CommentItem::Ref(s) => result.push_str(format!("**Ref:** [{}]({})\n\n", s, s).as_str()),
+            CommentItem::Return(s) => result.push_str(format!("**Return:** {}\n\n", s).as_str()),
+            CommentItem::See(s) => result.push_str(format!("**Ref:** [{}]({})\n\n", s, s).as_str()),
+            CommentItem::Wave(s) => {
+                result.push_str(format!("**Waveform:** {}\n\n", generate_waveform(s)).as_str())
+            }
+            _ => (),
+        }
+    }
+
+    result
+}
+
+fn generate_waveform(s: &String) -> String {
+    "".to_string()
 }
