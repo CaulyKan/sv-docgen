@@ -24,6 +24,7 @@ use sv_parser::Locate;
 use sv_parser::NetPortHeaderOrInterfacePortHeader;
 use sv_parser::NodeEvent;
 use sv_parser::ParamAssignment;
+use sv_parser::ParameterPortList;
 use sv_parser::RefNode;
 use sv_parser::RefNodes;
 use sv_parser::SyntaxTree;
@@ -404,6 +405,38 @@ impl Docgen {
                         let mut comment_items = parse_comment(self.get_str(x).as_str());
                         pending_items.append(&mut comment_items);
                     }
+                    RefNode::ParameterPortList(x) => {
+                        let mut assignments: Vec<&ParamAssignment> = x
+                            .into_iter()
+                            .filter_map(|x| match x {
+                                RefNode::ParamAssignment(y) => Some(y),
+                                _ => None,
+                            })
+                            .collect();
+                        let mut new_params: Vec<SvParam> = assignments
+                            .iter()
+                            .map(|x| SvParam {
+                                name: self.get_str(&x.nodes.0),
+                                dimensions: Some(self.get_str(&x.nodes.1)),
+                                default: x.nodes.2.as_ref().map(|x| self.get_str(&x.1)),
+                                param_type: None,
+                                comment: pending_items.get_brief(),
+                            })
+                            .collect();
+
+                        if let Some(item) = doc_stack
+                            .iter_mut()
+                            .rfind(|x| matches!(x, CommentDocument::Module { .. }))
+                        {
+                            match item {
+                                CommentDocument::Module { params, .. } => {
+                                    params.append(&mut new_params);
+                                }
+                                _ => (),
+                            }
+                        }
+                        pending_items.clear();
+                    }
                     RefNode::ParameterDeclarationParam(x) => {
                         let param_type = if let DataTypeOrImplicit::DataType(dt) = x.nodes.1.clone()
                         {
@@ -411,12 +444,12 @@ impl Docgen {
                         } else {
                             None
                         };
-                        let assignment0 = vec![&x.nodes.2.nodes.0.nodes.0];
-                        let assignments: Vec<&ParamAssignment> =
+                        let mut assignment0 = vec![&x.nodes.2.nodes.0.nodes.0];
+                        let mut assignments: Vec<&ParamAssignment> =
                             x.nodes.2.nodes.0.nodes.1.iter().map(|x| &x.1).collect();
+                        assignment0.append(&mut assignments);
                         let mut new_params: Vec<SvParam> = assignment0
                             .iter()
-                            .chain(assignments.iter())
                             .map(|x| SvParam {
                                 name: self.get_str(&x.nodes.0),
                                 dimensions: Some(self.get_str(&x.nodes.1)),

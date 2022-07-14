@@ -1,7 +1,8 @@
 /**
 @port b: this is port b
+@param A this is A
 */
-module test(input wire[9:0] a [0:4], b, inout c);
+module test #( A=1, string B="2", C) (input wire[9:0] a [0:4], b, inout c);
 
 endmodule
 
@@ -14,7 +15,7 @@ endmodule
 module test2(a,b,c);
     input a,c;
     wire a;
-    input logic[7:0] b [3:0];
+    input logic[A:0] b [3:0];
 
     //* this is A
     parameter A[0:5] = 0;

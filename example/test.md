@@ -2,7 +2,15 @@
 
 ## 1.1. module test
 
-### 1.1.1. Ports
+### 1.1.1. Parameters
+
+| name | default | type | dimensions | brief |
+| ---- | ------- | ---- | ---------- | ----- |
+| A | 1 |  |  | this is A |
+| B | "2" |  |  |  |
+| C |  |  |  |  |
+
+### 1.1.2. Ports
 
 | name | direction | type | dimensions | brief |
 | ---- | --------- | ---- | ---------- | ----- |
@@ -28,5 +36,5 @@ this is test2
 | ---- | --------- | ---- | ---------- | ----- |
 | a | input |  |  | this is port a |
 | c | input |  |  |  |
-| b | input | logic[7:0] | [3:0] |  this is port b |
+| b | input | logic[A:0] | [3:0] |  this is port b |
 
