@@ -37,7 +37,7 @@
   * @param P1: this is a parameter 
   * @param P2: this is another parameter 
   */  
-module foo #(parameter P1) (din1); 
+module foo #(P1) (din1); 
     input din1; 
     parameter P2=1; 
 endmodule 
@@ -56,8 +56,8 @@ docgen将会同时从module定义以及注释中提取信息，从而形成文�
   * @brief this is the foo module 
   */  
 module foo #( 
-    parameter P1,  //* this is a parameter 
-    parameter P2   //* this is another parameter 
+    P1,  //* this is a parameter 
+    P2   //* this is another parameter 
 ) ( 
     input din1,    //* this is an input port 
     output dout1,  //* this is an output port 

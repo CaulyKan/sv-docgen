@@ -49,10 +49,8 @@ fn main() {
     let mut result = vec![];
     for file in opt.files {
         let docgen = Docgen::from_file(file.to_str().unwrap(), &defines, &opt.includes).unwrap();
-        result.append(&mut docgen.parse_tree());
+        result.push(docgen.parse_tree());
     }
-
-    let result = result.iter().map(|x| x.refine()).collect();
 
     let md_str = MarkdownGenerator::generate(result);
     if let Some(output) = opt.output {

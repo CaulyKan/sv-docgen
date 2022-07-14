@@ -1,35 +1,23 @@
 use crate::comment_parser::parse_comment;
 use crate::comment_parser::CommentItem;
-use std::cell::RefCell;
 use std::collections::HashMap;
-use std::default;
-use std::env;
 use std::error::Error;
-use std::fmt;
 use std::fs;
-use std::future::pending;
-use std::hash::Hash;
-use std::ops::DerefMut;
 use std::path::PathBuf;
-use std::thread::panicking;
 use sv_parser::parse_sv_str;
-use sv_parser::port_declarations;
-use sv_parser::unwrap_node;
 use sv_parser::AnsiPortDeclaration;
-use sv_parser::AnsiPortDeclarationNet;
-use sv_parser::Comment;
 use sv_parser::DataTypeOrImplicit;
 use sv_parser::Define;
 use sv_parser::Locate;
 use sv_parser::NetPortHeaderOrInterfacePortHeader;
 use sv_parser::NodeEvent;
 use sv_parser::ParamAssignment;
-use sv_parser::ParameterPortList;
 use sv_parser::RefNode;
 use sv_parser::RefNodes;
 use sv_parser::SyntaxTree;
 
 pub struct Docgen {
+    file: String,
     tree: SyntaxTree,
 }
 
@@ -59,104 +47,146 @@ pub struct SvState {
 }
 
 #[derive(Debug, Clone)]
-pub enum CommentDocument {
-    Module {
-        name: String,
-        brief: String,
-        ports: Vec<SvPort>,
-        params: Vec<SvParam>,
-        comment: Vec<CommentItem>,
-    },
-    Function {
-        name: String,
-        brief: String,
-        ports: Vec<SvPort>,
-        params: Vec<SvParam>,
-        comment: Vec<CommentItem>,
-    },
-    Task {
-        name: String,
-        brief: String,
-        ports: Vec<SvPort>,
-        params: Vec<SvParam>,
-        comment: Vec<CommentItem>,
-    },
-    Signal {
-        name: String,
-        brief: String,
-        signal_type: String,
-        width: String,
-        dimensions: String,
-        comment: Vec<CommentItem>,
-    },
-    StateMachine {
-        name: String,
-        brief: String,
-        states: Vec<SvState>,
-    },
-    File {
-        name: String,
-        brief: String,
-        author: String,
-        rev: Vec<String>,
-        comment: Vec<CommentItem>,
-    },
+pub struct SvModule {
+    pub name: String,
+    pub brief: Option<String>,
+    pub ports: Vec<SvPort>,
+    pub params: Vec<SvParam>,
+    pub signals: Vec<SvSignal>,
+    pub state_machines: Vec<SvStateMachine>,
+    pub tasks: Vec<SvFunctionTask>,
+    pub comment: Vec<CommentItem>,
 }
 
-impl CommentDocument {
-    pub fn new_module(name: String, items: Vec<CommentItem>) -> Self {
-        CommentDocument::Module {
-            name,
-            brief: String::from(""),
-            ports: vec![],
-            params: vec![],
-            comment: items,
+#[derive(Debug, Clone)]
+pub struct SvFile {
+    pub name: String,
+    pub brief: Option<String>,
+    pub author: Option<String>,
+    pub rev: Vec<String>,
+    pub modules: Vec<SvModule>,
+    pub comment: Vec<CommentItem>,
+}
+
+#[derive(Debug, Clone)]
+pub struct SvFunctionTask {
+    pub name: String,
+    pub is_function: bool,
+    pub brief: Option<String>,
+    pub ports: Vec<SvPort>,
+    pub params: Vec<SvParam>,
+    pub signals: Vec<SvSignal>,
+    pub comment: Vec<CommentItem>,
+}
+
+#[derive(Debug, Clone)]
+pub struct SvSignal {
+    pub name: String,
+    pub brief: Option<String>,
+    pub signal_type: Option<String>,
+    pub width: Option<String>,
+    pub dimensions: Option<String>,
+    pub comment: Vec<CommentItem>,
+}
+
+#[derive(Debug, Clone)]
+pub struct SvStateMachine {
+    pub name: String,
+    pub brief: Option<String>,
+    pub states: Vec<SvState>,
+}
+
+pub enum DocStackable {
+    Module(SvModule),
+    File(SvFile),
+    Task(SvFunctionTask),
+}
+
+impl SvFile {
+    fn new(file: &str) -> SvFile {
+        SvFile {
+            name: file.to_string(),
+            brief: None,
+            author: None,
+            rev: Vec::new(),
+            modules: Vec::new(),
+            comment: Vec::new(),
         }
     }
+}
 
-    pub fn refine(&self) -> Self {
-        match self {
-            CommentDocument::Module {
-                name,
-                ports,
-                params,
-                comment,
-                ..
-            } => {
-                // let brief = comment.iter().fold(String::new(), |acc, x| match x {
-                //     CommentItem::Brief(s) => acc + "\n" + s,
-                //     _ => acc,
-                // });
-                let mut brief = Vec::new();
-                let mut ports = ports.clone();
-                let mut params = params.clone();
-                let mut comments = Vec::new();
-                for c in comment {
-                    match c {
-                        CommentItem::Brief(s) => brief.push(s.clone()),
-                        CommentItem::Port { name, desc } => {
-                            if let Some(p) = ports.iter_mut().find(|x| &x.name == name) {
-                                p.comment = desc.clone();
-                            }
-                        }
-                        CommentItem::Param { name, desc } => {
-                            if let Some(p) = params.iter_mut().find(|x| &x.name == name) {
-                                p.comment = desc.clone();
-                            }
-                        }
-                        _ => comments.push(c),
+impl SvModule {
+    fn new(name: &str) -> SvModule {
+        SvModule {
+            name: name.to_string(),
+            brief: None,
+            ports: Vec::new(),
+            params: Vec::new(),
+            signals: Vec::new(),
+            state_machines: Vec::new(),
+            tasks: Vec::new(),
+            comment: Vec::new(),
+        }
+    }
+}
+
+trait Refine {
+    fn refine(&self) -> Self;
+}
+
+impl Refine for SvModule {
+    fn refine(&self) -> Self {
+        let SvModule {
+            name,
+            ports,
+            params,
+            comment,
+            signals,
+            tasks,
+            state_machines,
+            ..
+        } = self;
+
+        let mut brief = Vec::new();
+        let mut ports = ports.clone();
+        let mut params = params.clone();
+        let mut comments = Vec::new();
+        for c in comment {
+            match c {
+                CommentItem::Brief(s) => brief.push(s.clone()),
+                CommentItem::Port { name, desc } => {
+                    if let Some(p) = ports.iter_mut().find(|x| &x.name == name) {
+                        p.comment = desc.clone();
                     }
                 }
-                CommentDocument::Module {
-                    name: name.clone(),
-                    brief: brief.join("\n"),
-                    ports: ports.clone(),
-                    params: params.clone(),
-                    comment: comment.clone(),
+                CommentItem::Param { name, desc } => {
+                    if let Some(p) = params.iter_mut().find(|x| &x.name == name) {
+                        p.comment = desc.clone();
+                    }
                 }
+                _ => comments.push(c),
             }
-            _ => self.clone(),
         }
+        SvModule {
+            name: name.clone(),
+            brief: if brief.len() == 0 {
+                None
+            } else {
+                Some(brief.join("\n"))
+            },
+            ports: ports.clone(),
+            params: params.clone(),
+            comment: comment.clone(),
+            signals: signals.clone(),
+            state_machines: state_machines.clone(),
+            tasks: tasks.clone(),
+        }
+    }
+}
+
+impl Refine for SvFile {
+    fn refine(&self) -> Self {
+        self.clone()
     }
 }
 
@@ -183,11 +213,12 @@ impl Docgen {
         includes: &Vec<PathBuf>,
     ) -> Result<Docgen, impl Error> {
         let content = fs::read_to_string(file).expect(&format!("unable to open {}", file));
-        return Self::new(content.as_str(), defines, includes);
+        Self::new(content.as_str(), file, defines, includes)
     }
 
     pub fn new<'a>(
         verilog: &str,
+        file: &str,
         defines: &HashMap<String, Option<Define>>,
         includes: &Vec<PathBuf>,
     ) -> Result<Docgen, impl Error> {
@@ -200,23 +231,27 @@ impl Docgen {
             false,
         );
         match parsed {
-            Ok((syntax_tree, _defines)) => Ok(Docgen { tree: syntax_tree }),
+            Ok((syntax_tree, _defines)) => Ok(Docgen {
+                file: file.to_string(),
+                tree: syntax_tree,
+            }),
             Err(x) => Err(x),
         }
     }
 
-    pub fn parse_tree(&self) -> Vec<CommentDocument> {
-        let mut result = vec![];
-        let mut doc_stack: Vec<CommentDocument> = vec![];
+    pub fn parse_tree(&self) -> SvFile {
+        let mut result = SvFile::new(self.file.as_str());
+        let mut doc_stack: Vec<DocStackable> = vec![];
         let mut pending_items: Vec<CommentItem> = vec![];
 
         for event in self.tree.into_iter().event() {
             match event {
                 NodeEvent::Enter(node) => match node {
                     RefNode::ModuleDeclaration(_) => {
-                        let id = self.get_identifier(&node).unwrap();
-                        let module = CommentDocument::new_module(id, pending_items);
-                        doc_stack.push(module);
+                        let name = self.get_identifier(&node).unwrap();
+                        let mut module = SvModule::new(name.as_str());
+                        module.comment = pending_items;
+                        doc_stack.push(DocStackable::Module(module));
                         pending_items = vec![];
                     }
                     RefNode::AnsiPortDeclaration(x) => {
@@ -281,11 +316,11 @@ impl Docgen {
 
                         if let Some(item) = doc_stack
                             .iter_mut()
-                            .rfind(|x| matches!(x, CommentDocument::Module { .. }))
+                            .rfind(|x| matches!(x, DocStackable::Module { .. }))
                         {
                             match item {
-                                CommentDocument::Module { ports, .. } => {
-                                    ports.push(port);
+                                DocStackable::Module(m) => {
+                                    m.ports.push(port);
                                 }
                                 _ => (),
                             }
@@ -389,12 +424,10 @@ impl Docgen {
                                     .collect();
                                 if let Some(item) = doc_stack
                                     .iter_mut()
-                                    .rfind(|x| matches!(x, CommentDocument::Module { .. }))
+                                    .rfind(|x| matches!(x, DocStackable::Module { .. }))
                                 {
                                     match item {
-                                        CommentDocument::Module { ports, .. } => {
-                                            ports.append(&mut new_ports)
-                                        }
+                                        DocStackable::Module(m) => m.ports.append(&mut new_ports),
                                         _ => (),
                                     }
                                 }
@@ -426,11 +459,11 @@ impl Docgen {
 
                         if let Some(item) = doc_stack
                             .iter_mut()
-                            .rfind(|x| matches!(x, CommentDocument::Module { .. }))
+                            .rfind(|x| matches!(x, DocStackable::Module { .. }))
                         {
                             match item {
-                                CommentDocument::Module { params, .. } => {
-                                    params.append(&mut new_params);
+                                DocStackable::Module(m) => {
+                                    m.params.append(&mut new_params);
                                 }
                                 _ => (),
                             }
@@ -461,11 +494,11 @@ impl Docgen {
 
                         if let Some(item) = doc_stack
                             .iter_mut()
-                            .rfind(|x| matches!(x, CommentDocument::Module { .. }))
+                            .rfind(|x| matches!(x, DocStackable::Module { .. }))
                         {
                             match item {
-                                CommentDocument::Module { params, .. } => {
-                                    params.append(&mut new_params);
+                                DocStackable::Module(m) => {
+                                    m.params.append(&mut new_params);
                                 }
                                 _ => (),
                             }
@@ -478,8 +511,8 @@ impl Docgen {
                 },
                 NodeEvent::Leave(node) => match node {
                     RefNode::ModuleDeclaration(_) => {
-                        if let Some(d) = doc_stack.pop() {
-                            result.push(d);
+                        if let Some(DocStackable::Module(d)) = doc_stack.pop() {
+                            result.modules.push(d.refine());
                         }
                     }
                     _ => (),
@@ -487,7 +520,7 @@ impl Docgen {
             }
         }
 
-        result
+        result.refine()
     }
 
     fn get_identifier(&self, node: &RefNode) -> Option<String> {
