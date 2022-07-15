@@ -112,7 +112,7 @@ impl MarkdownGenerator {
         if let Some(fsm) = current_fsm {
             result.push_str(
                 format!(
-                    "**State Machine:** {}\n {}\n\n",
+                    "**State Machine:** {}\n\n {}\n\n",
                     &fsm.name.clone(),
                     &self.generate_fsm(&fsm)
                 )
