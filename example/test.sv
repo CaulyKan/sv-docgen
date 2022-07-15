@@ -21,6 +21,7 @@ endmodule
  * @example 
  *   assign a = b;
  *   test2 u_test(a,b,c);
+ * @wave { signal: [{ name: "Alfa", wave: "01.zx=ud.23.456789" }] }
  */
 module test2(a,b,c);
     input a,c;

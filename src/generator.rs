@@ -1,4 +1,10 @@
-use std::path::Path;
+use std::{
+    collections::hash_map::DefaultHasher,
+    fs,
+    hash::{Hash, Hasher},
+    path::Path,
+    process::Command,
+};
 
 use crate::{
     comment_parser::{parse_comment, CommentItem},
@@ -7,13 +13,92 @@ use crate::{
 };
 
 pub trait DocgenGenerator {
-    fn generate(items: Vec<SvFile>) -> String;
+    fn generate(&self, items: Vec<SvFile>) -> String;
 }
 
-pub struct MarkdownGenerator {}
+pub struct MarkdownGenerator {
+    pub cwd: String,
+    pub wavedrom: Option<String>,
+}
+
+impl MarkdownGenerator {
+    pub fn new(cwd: String, wavedrom: Option<String>) -> Self {
+        MarkdownGenerator { cwd, wavedrom }
+    }
+
+    fn format_comment(&self, comments: &Vec<CommentItem>) -> String {
+        let mut result = String::new();
+
+        for comment in comments {
+            match comment {
+                CommentItem::Author(s) => {
+                    result.push_str(format!("**Author:** {}\n\n", s).as_str())
+                }
+                CommentItem::Example(s) => {
+                    if s.contains("\n") {
+                        result.push_str(format!("**Example:** \n```\n{}\n```\n\n", s).as_str());
+                    } else {
+                        result.push_str(format!("**Example:** `{}`\n\n", s).as_str());
+                    }
+                }
+                CommentItem::Note(s) => {
+                    if s.contains("\n") {
+                        result.push_str("> **Note:**\n>\n");
+                        s.split("\n")
+                            .map(|x| "> ".to_owned() + x + "\n>\n")
+                            .for_each(|x| result.push_str(x.as_str()));
+                        result.push_str("\n");
+                    } else {
+                        result.push_str(format!("> **Note:** {}\n\n", s).as_str())
+                    }
+                }
+                CommentItem::Ref(s) => {
+                    result.push_str(format!("**Ref:** [{}]({})\n\n", s, s).as_str())
+                }
+                CommentItem::Return(s) => {
+                    result.push_str(format!("**Return:** {}\n\n", s).as_str())
+                }
+                CommentItem::See(s) => {
+                    result.push_str(format!("**Ref:** [{}]({})\n\n", s, s).as_str())
+                }
+                CommentItem::Wave(s) => result
+                    .push_str(format!("**Waveform:** {}\n\n", self.generate_waveform(s)).as_str()),
+                _ => (),
+            }
+        }
+
+        result
+    }
+
+    fn generate_waveform(&self, s: &String) -> String {
+        if let Some(wavedrom) = &self.wavedrom {
+            let mut hasher = DefaultHasher::new();
+            s.hash(&mut hasher);
+            let hash = hasher.finish();
+            let file_name = format!("docgen_wave_{}.png", hash);
+            let file_path = Path::new(&self.cwd).join(&file_name);
+            let temp_file = Path::new(&self.cwd).join(".temp.json");
+            fs::write(&temp_file, s).unwrap();
+
+            Command::new(wavedrom)
+                .arg("-i")
+                .arg(temp_file.to_str().unwrap())
+                .arg("-p")
+                .arg(file_path.to_str().unwrap())
+                .output()
+                .unwrap();
+
+            fs::remove_file(temp_file).unwrap();
+
+            format!("![wave]({})", file_name)
+        } else {
+            s.clone()
+        }
+    }
+}
 
 impl DocgenGenerator for MarkdownGenerator {
-    fn generate(items: Vec<SvFile>) -> String {
+    fn generate(&self, items: Vec<SvFile>) -> String {
         let mut result = String::new();
         let mut index = NumberedList::new();
 
@@ -45,7 +130,7 @@ impl DocgenGenerator for MarkdownGenerator {
                             result.push_str(format!("{}\n\n", brief).as_str());
                         }
                     }
-                    let s = format_comment(&module.comment);
+                    let s = self.format_comment(&module.comment);
                     result.push_str(s.as_str());
                     if module.params.len() > 0 {
                         result.push_str(
@@ -90,45 +175,4 @@ impl DocgenGenerator for MarkdownGenerator {
         }
         result
     }
-}
-
-fn format_comment(comments: &Vec<CommentItem>) -> String {
-    let mut result = String::new();
-
-    for comment in comments {
-        match comment {
-            CommentItem::Author(s) => result.push_str(format!("**Author:** {}\n\n", s).as_str()),
-            CommentItem::Example(s) => {
-                if s.contains("\n") {
-                    result.push_str(format!("**Example:** \n```\n{}\n```\n\n", s).as_str());
-                } else {
-                    result.push_str(format!("**Example:** `{}`\n\n", s).as_str());
-                }
-            }
-            CommentItem::Note(s) => {
-                if s.contains("\n") {
-                    result.push_str("> **Note:**\n>\n");
-                    s.split("\n")
-                        .map(|x| "> ".to_owned() + x + "\n>\n")
-                        .for_each(|x| result.push_str(x.as_str()));
-                    result.push_str("\n");
-                } else {
-                    result.push_str(format!("> **Note:** {}\n\n", s).as_str())
-                }
-            }
-            CommentItem::Ref(s) => result.push_str(format!("**Ref:** [{}]({})\n\n", s, s).as_str()),
-            CommentItem::Return(s) => result.push_str(format!("**Return:** {}\n\n", s).as_str()),
-            CommentItem::See(s) => result.push_str(format!("**Ref:** [{}]({})\n\n", s, s).as_str()),
-            CommentItem::Wave(s) => {
-                result.push_str(format!("**Waveform:** {}\n\n", generate_waveform(s)).as_str())
-            }
-            _ => (),
-        }
-    }
-
-    result
-}
-
-fn generate_waveform(s: &String) -> String {
-    "".to_string()
 }

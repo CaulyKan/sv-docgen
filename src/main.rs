@@ -1,6 +1,10 @@
 use docgen::Docgen;
 use generator::{DocgenGenerator, MarkdownGenerator};
-use std::{collections::HashMap, fs, path::PathBuf};
+use std::{
+    collections::HashMap,
+    fs,
+    path::{Path, PathBuf},
+};
 use structopt::StructOpt;
 use sv_parser::{Define, DefineText};
 
@@ -27,6 +31,9 @@ struct Opt {
 
     #[structopt(short = "o", long = "output")]
     pub output: Option<String>,
+
+    #[structopt(long = "wavedrom")]
+    pub wavedrom: Option<String>,
 }
 
 fn main() {
@@ -52,8 +59,19 @@ fn main() {
         result.push(docgen.parse_tree());
     }
 
-    let md_str = MarkdownGenerator::generate(result);
-    if let Some(output) = opt.output {
+    let cwd = if opt.output.is_none() {
+        "./".to_string()
+    } else {
+        let x = opt.output.clone().unwrap();
+        let x = PathBuf::from(x);
+        let x = x.parent();
+        String::from(x.unwrap().to_string_lossy())
+        // x.unwrap().to_str().unwrap()
+    };
+
+    let md_gen = MarkdownGenerator::new(cwd.to_string(), opt.wavedrom);
+    let md_str = md_gen.generate(result);
+    if let Some(output) = &opt.output {
         fs::write(output, md_str).unwrap();
     } else {
         println!("{}", md_str);
