@@ -76,7 +76,7 @@ impl MarkdownGenerator {
                 }
                 CommentItem::Wave(s) => {
                     result.push_str(
-                        format!("**Waveform:** {}\n\n", self.generate_waveform(s)).as_str(),
+                        format!("**Waveform:** \n\n {}\n\n", self.generate_waveform(s)).as_str(),
                     );
                 }
                 CommentItem::State { name, desc } => {
@@ -93,7 +93,7 @@ impl MarkdownGenerator {
                     if let Some(fsm) = &current_fsm {
                         result.push_str(
                             format!(
-                                "**State Machine:** {}\n {}\n\n",
+                                "**State Machine:** {}\n\n {}\n\n",
                                 &fsm.name.clone(),
                                 &self.generate_fsm(fsm)
                             )
