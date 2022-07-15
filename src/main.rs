@@ -34,6 +34,9 @@ struct Opt {
 
     #[structopt(long = "wavedrom")]
     pub wavedrom: Option<String>,
+
+    #[structopt(long = "graphviz")]
+    pub graphviz: Option<String>,
 }
 
 fn main() {
@@ -69,7 +72,7 @@ fn main() {
         // x.unwrap().to_str().unwrap()
     };
 
-    let md_gen = MarkdownGenerator::new(cwd.to_string(), opt.wavedrom);
+    let md_gen = MarkdownGenerator::new(cwd.to_string(), opt.wavedrom, opt.graphviz);
     let md_str = md_gen.generate(result);
     if let Some(output) = &opt.output {
         fs::write(output, md_str).unwrap();

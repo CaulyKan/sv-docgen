@@ -19,15 +19,28 @@ pub trait DocgenGenerator {
 pub struct MarkdownGenerator {
     pub cwd: String,
     pub wavedrom: Option<String>,
+    pub graphviz: Option<String>,
+}
+
+#[derive(Hash)]
+struct FSM {
+    name: String,
+    transits: Vec<(String, String, String)>,
+    states: Vec<(String, String)>,
 }
 
 impl MarkdownGenerator {
-    pub fn new(cwd: String, wavedrom: Option<String>) -> Self {
-        MarkdownGenerator { cwd, wavedrom }
+    pub fn new(cwd: String, wavedrom: Option<String>, graphviz: Option<String>) -> Self {
+        MarkdownGenerator {
+            cwd,
+            wavedrom,
+            graphviz,
+        }
     }
 
     fn format_comment(&self, comments: &Vec<CommentItem>) -> String {
         let mut result = String::new();
+        let mut current_fsm: Option<FSM> = None;
 
         for comment in comments {
             match comment {
@@ -61,13 +74,107 @@ impl MarkdownGenerator {
                 CommentItem::See(s) => {
                     result.push_str(format!("**Ref:** [{}]({})\n\n", s, s).as_str())
                 }
-                CommentItem::Wave(s) => result
-                    .push_str(format!("**Waveform:** {}\n\n", self.generate_waveform(s)).as_str()),
+                CommentItem::Wave(s) => {
+                    result.push_str(
+                        format!("**Waveform:** {}\n\n", self.generate_waveform(s)).as_str(),
+                    );
+                }
+                CommentItem::State { name, desc } => {
+                    if let Some(ref mut fsm) = current_fsm {
+                        fsm.states.push((name.clone(), desc.clone()));
+                    }
+                }
+                CommentItem::Transit { from, to, desc } => {
+                    if let Some(ref mut fsm) = current_fsm {
+                        fsm.transits.push((from.clone(), to.clone(), desc.clone()));
+                    }
+                }
+                CommentItem::FSM(s) => {
+                    if let Some(fsm) = &current_fsm {
+                        result.push_str(
+                            format!(
+                                "**State Machine:** {}\n {}\n\n",
+                                &fsm.name.clone(),
+                                &self.generate_fsm(fsm)
+                            )
+                            .as_str(),
+                        );
+                    }
+                    current_fsm = Some(FSM {
+                        name: s.clone(),
+                        states: Vec::new(),
+                        transits: Vec::new(),
+                    });
+                }
                 _ => (),
             }
         }
-
+        if let Some(fsm) = current_fsm {
+            result.push_str(
+                format!(
+                    "**State Machine:** {}\n {}\n\n",
+                    &fsm.name.clone(),
+                    &self.generate_fsm(&fsm)
+                )
+                .as_str(),
+            );
+        }
         result
+    }
+
+    fn generate_fsm(&self, fsm: &FSM) -> String {
+        if let Some(graphviz) = &self.graphviz {
+            let mut gv = String::from("digraph G {\n");
+
+            let mut hasher = DefaultHasher::new();
+            fsm.hash(&mut hasher);
+            let hash = hasher.finish();
+            let file_name = format!("docgen_fsm_{}.png", hash);
+            let file_path = Path::new(&self.cwd).join(&file_name);
+            let temp_file = Path::new(&self.cwd).join(".temp.gv");
+
+            for (from, to, desc) in &fsm.transits {
+                gv.push_str(format!("{}->{}[label=\"{}\"]\n", from, to, desc).as_str());
+            }
+
+            if fsm.states.len() > 0 {
+                let s = fsm
+                    .states
+                    .iter()
+                    .map(|(state, desc)| format!("{{ {} | {} }}", state, desc))
+                    .collect::<Vec<String>>()
+                    .join("|");
+                gv.push_str(
+                    format!(
+                        "xxxxxxxxxxxxx[shape=record,label=\" {{ States | {} }} \"]\n",
+                        s
+                    )
+                    .as_str(),
+                );
+            }
+
+            gv.push_str("}");
+
+            fs::write(&temp_file, gv).unwrap();
+
+            Command::new(graphviz)
+                .arg("-Tpng")
+                .arg(temp_file.to_str().unwrap())
+                .arg("-o")
+                .arg(file_path.to_str().unwrap())
+                .output()
+                .unwrap();
+
+            fs::remove_file(temp_file).unwrap();
+            format!("![fsm]({})", file_name)
+        } else {
+            let mut result = String::from("");
+            for (from, to, desc) in &fsm.transits {
+                result.push_str(format!("* {}->{}: {}\n", from, to, desc).as_str());
+            }
+            result.push_str("\n");
+            result
+        }
     }
 
     fn generate_waveform(&self, s: &String) -> String {

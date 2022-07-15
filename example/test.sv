@@ -22,6 +22,15 @@ endmodule
  *   assign a = b;
  *   test2 u_test(a,b,c);
  * @wave { signal: [{ name: "Alfa", wave: "01.zx=ud.23.456789" }] }
+ *
+ *
+ * @fsm SomeStateMachine
+ * @state sleeping: This is sleeping
+ * @state working: This is working
+ * @sleeping->working: transit 1
+ * @working->resting: transit 2
+ * @resting -> sleeping transit 3
+ * @working->sleeping: transit 4
  */
 module test2(a,b,c);
     input a,c;

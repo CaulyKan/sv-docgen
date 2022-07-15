@@ -42,6 +42,9 @@ test2 u_test(a,b,c);
 
 **Waveform:** ![wave](docgen_wave_11103022529399375368.png)
 
+**State Machine:** SomeStateMachine
+ ![fsm](docgen_fsm_12073188082405142815.png)
+
 ### 1.1.1. Parameters
 
 | name | default | type | dimensions | brief |
