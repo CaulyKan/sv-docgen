@@ -66,3 +66,24 @@ test2 u_test(a,b,c);
 
 ## 1.1. module test3
 
+### 1.1.1. function my_function
+
+this is a function
+
+### 1.1.1.1. Ports
+
+| name | direction | type | dimensions | brief |
+| ---- | --------- | ---- | ---------- | ----- |
+| a | input | [9:0] |  |  |
+| b |  |  |  |  this is port b |
+| c [0:5] | inout |  |  |  |
+
+### 1.1.1. task my_task
+
+### 1.1.1.1. Ports
+
+| name | direction | type | dimensions | brief |
+| ---- | --------- | ---- | ---------- | ----- |
+| a | input | [3:0] |  |  |
+| b | input | [3:0] |  |  |
+

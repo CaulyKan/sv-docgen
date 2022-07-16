@@ -1,17 +1,13 @@
 use docgen::Docgen;
 use generator::{DocgenGenerator, MarkdownGenerator};
-use std::{
-    collections::HashMap,
-    fs,
-    path::{Path, PathBuf},
-};
+use std::{collections::HashMap, fs, path::PathBuf};
 use structopt::StructOpt;
 use sv_parser::{Define, DefineText};
 
-mod comment_parser;
-mod docgen;
-mod generator;
-mod numbered_list;
+pub mod comment_parser;
+pub mod docgen;
+pub mod generator;
+pub mod numbered_list;
 
 #[derive(StructOpt)]
 struct Opt {
@@ -26,8 +22,8 @@ struct Opt {
     pub defines: Vec<String>,
 
     /// Quiet
-    #[structopt(short = "q", long = "quiet")]
-    pub quiet: bool,
+    // #[structopt(short = "q", long = "quiet")]
+    // pub quiet: bool,
 
     #[structopt(short = "o", long = "output")]
     pub output: Option<String>,

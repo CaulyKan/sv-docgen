@@ -98,7 +98,6 @@ pub struct SvStateMachine {
 
 pub enum DocStackable {
     Module(SvModule),
-    File(SvFile),
     Task(SvFunctionTask),
 }
 
@@ -126,6 +125,20 @@ impl SvModule {
             state_machines: Vec::new(),
             tasks: Vec::new(),
             comment: Vec::new(),
+        }
+    }
+}
+
+impl SvFunctionTask {
+    fn new(name: &str, is_func: bool) -> Self {
+        SvFunctionTask {
+            name: name.to_string(),
+            brief: None,
+            ports: Vec::new(),
+            params: Vec::new(),
+            signals: Vec::new(),
+            comment: Vec::new(),
+            is_function: is_func,
         }
     }
 }
@@ -180,6 +193,54 @@ impl Refine for SvModule {
             signals: signals.clone(),
             state_machines: state_machines.clone(),
             tasks: tasks.clone(),
+        }
+    }
+}
+
+impl Refine for SvFunctionTask {
+    fn refine(&self) -> Self {
+        let SvFunctionTask {
+            name,
+            ports,
+            params,
+            comment,
+            signals,
+            is_function,
+            ..
+        } = self;
+
+        let mut brief = Vec::new();
+        let mut ports = ports.clone();
+        let mut params = params.clone();
+        let mut comments = Vec::new();
+        for c in comment {
+            match c {
+                CommentItem::Brief(s) => brief.push(s.clone()),
+                CommentItem::Port { name, desc } => {
+                    if let Some(p) = ports.iter_mut().find(|x| &x.name == name) {
+                        p.comment = desc.clone();
+                    }
+                }
+                CommentItem::Param { name, desc } => {
+                    if let Some(p) = params.iter_mut().find(|x| &x.name == name) {
+                        p.comment = desc.clone();
+                    }
+                }
+                _ => comments.push(c),
+            }
+        }
+        SvFunctionTask {
+            name: name.clone(),
+            brief: if brief.len() == 0 {
+                None
+            } else {
+                Some(brief.join("\n"))
+            },
+            ports: ports.clone(),
+            params: params.clone(),
+            comment: comment.clone(),
+            signals: signals.clone(),
+            is_function: *is_function,
         }
     }
 }
@@ -252,6 +313,20 @@ impl Docgen {
                         let mut module = SvModule::new(name.as_str());
                         module.comment = pending_items;
                         doc_stack.push(DocStackable::Module(module));
+                        pending_items = vec![];
+                    }
+                    RefNode::FunctionDeclaration(_) => {
+                        let name = self.get_identifier(&node).unwrap();
+                        let mut functask = SvFunctionTask::new(name.as_str(), true);
+                        functask.comment = pending_items;
+                        doc_stack.push(DocStackable::Task(functask));
+                        pending_items = vec![];
+                    }
+                    RefNode::TaskDeclaration(_) => {
+                        let name = self.get_identifier(&node).unwrap();
+                        let mut functask = SvFunctionTask::new(name.as_str(), false);
+                        functask.comment = pending_items;
+                        doc_stack.push(DocStackable::Task(functask));
                         pending_items = vec![];
                     }
                     RefNode::AnsiPortDeclaration(x) => {
@@ -410,7 +485,7 @@ impl Docgen {
                                     ok = true;
                                 }
                                 //TODO: InterfacePortDeclaration
-                                _ => ok = false,
+                                _ => (),
                             }
                             if ok {
                                 let mut new_ports: Vec<SvPort> = (0..names.len())
@@ -434,12 +509,86 @@ impl Docgen {
                             }
                         }
                     }
+                    RefNode::TfPortItem(x) => {
+                        let direction = x.nodes.1.as_ref().map(|x| self.get_str(x));
+                        let port_type = self.get_str(&x.nodes.3);
+                        let port: SvPort;
+                        if let Some((port_name, dimensions, default_value)) = &x.nodes.4 {
+                            let port_name = self.get_str(port_name);
+                            let dimensions = self.get_str(dimensions);
+                            let default_value = self.get_str(default_value);
+
+                            port = SvPort {
+                                name: port_name,
+                                port_type: Some(port_type),
+                                direction: direction.clone(),
+                                dimensions: Some(dimensions),
+                                comment: String::new(),
+                            };
+                        } else {
+                            // TODO: sv-parse error?
+                            port = SvPort {
+                                name: port_type,
+                                port_type: None,
+                                direction: direction.clone(),
+                                dimensions: None,
+                                comment: String::new(),
+                            };
+                        }
+                        if let Some(item) = doc_stack
+                            .iter_mut()
+                            .rfind(|x| matches!(x, DocStackable::Task { .. }))
+                        {
+                            match item {
+                                DocStackable::Task(m) => {
+                                    m.ports.push(port);
+                                }
+                                _ => (),
+                            }
+                        }
+                    }
+                    RefNode::TfPortDeclaration(x) => {
+                        let direction = self.get_str(&x.nodes.1);
+                        let port_type = self.get_str(&x.nodes.3);
+                        let list = &x.nodes.4.nodes.0;
+                        let mut first = vec![(
+                            self.get_str(&list.nodes.0 .0),
+                            self.get_str(&list.nodes.0 .1),
+                        )];
+                        let mut others = list
+                            .nodes
+                            .1
+                            .iter()
+                            .map(|x| (self.get_str(&x.1 .0), self.get_str(&x.1 .1)))
+                            .collect::<Vec<(String, String)>>();
+                        first.append(&mut others);
+                        if let Some(item) = doc_stack
+                            .iter_mut()
+                            .rfind(|x| matches!(x, DocStackable::Task { .. }))
+                        {
+                            match item {
+                                DocStackable::Task(m) => {
+                                    for (name, dimensions) in first {
+                                        let port = SvPort {
+                                            name,
+                                            port_type: Some(port_type.clone()),
+                                            direction: Some(direction.clone()),
+                                            dimensions: Some(dimensions),
+                                            comment: String::new(),
+                                        };
+                                        m.ports.push(port);
+                                    }
+                                }
+                                _ => (),
+                            }
+                        }
+                    }
                     RefNode::Comment(x) => {
                         let mut comment_items = parse_comment(self.get_str(x).as_str());
                         pending_items.append(&mut comment_items);
                     }
                     RefNode::ParameterPortList(x) => {
-                        let mut assignments: Vec<&ParamAssignment> = x
+                        let assignments: Vec<&ParamAssignment> = x
                             .into_iter()
                             .filter_map(|x| match x {
                                 RefNode::ParamAssignment(y) => Some(y),
@@ -513,6 +662,36 @@ impl Docgen {
                     RefNode::ModuleDeclaration(_) => {
                         if let Some(DocStackable::Module(d)) = doc_stack.pop() {
                             result.modules.push(d.refine());
+                        }
+                    }
+                    RefNode::FunctionDeclaration(_) => {
+                        if let Some(DocStackable::Task(d)) = &doc_stack.pop() {
+                            if let Some(item) = doc_stack
+                                .iter_mut()
+                                .rfind(|x| matches!(x, DocStackable::Module { .. }))
+                            {
+                                match item {
+                                    DocStackable::Module(m) => {
+                                        m.tasks.push(d.clone().refine());
+                                    }
+                                    _ => (),
+                                }
+                            }
+                        }
+                    }
+                    RefNode::TaskDeclaration(_) => {
+                        if let Some(DocStackable::Task(d)) = &doc_stack.pop() {
+                            if let Some(item) = doc_stack
+                                .iter_mut()
+                                .rfind(|x| matches!(x, DocStackable::Module { .. }))
+                            {
+                                match item {
+                                    DocStackable::Module(m) => {
+                                        m.tasks.push(d.clone().refine());
+                                    }
+                                    _ => (),
+                                }
+                            }
                         }
                     }
                     _ => (),

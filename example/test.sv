@@ -48,7 +48,16 @@ endmodule
 
 module test3();
 
-    task my_task();
+    /**
+    @brief this is a function
+    @port b: this is port b
+    @param A this is A
+    */
+    function [7:0] my_function (input [9:0] a, b, inout c [0:5]);
+    endfunction
+
+    task my_task;
+        input [3:0] a,b;
     endtask
 
 endmodule
