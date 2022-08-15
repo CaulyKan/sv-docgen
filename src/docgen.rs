@@ -513,10 +513,9 @@ impl Docgen {
                         let direction = x.nodes.1.as_ref().map(|x| self.get_str(x));
                         let port_type = self.get_str(&x.nodes.3);
                         let port: SvPort;
-                        if let Some((port_name, dimensions, default_value)) = &x.nodes.4 {
+                        if let Some((port_name, dimensions, _default_value)) = &x.nodes.4 {
                             let port_name = self.get_str(port_name);
                             let dimensions = self.get_str(dimensions);
-                            let default_value = self.get_str(default_value);
 
                             port = SvPort {
                                 name: port_name,

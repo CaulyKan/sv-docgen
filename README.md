@@ -12,6 +12,9 @@ sv-docgen is a program that generates documentation from system-verilog source c
 
 ```verilog-docgen a.v b.v c.lst --output out.md [--other-options] ```
 
+To produce [this example](example/test.md), run: 
+``` cargo run example/test.sv --output example/test.md --wavedrom=wavedrom-cli --graphviz=dot ```
+
 ### 2.2. Verilog comments
 
 The sv-docgen is based on great [sv-parser](https://github.com/dalance/sv-parser), and it supports up to IEEE 1800-2017.
@@ -120,6 +123,8 @@ Some commands are available in all above documentations, including:
   */ 
 ```
 Note: @wave will use wavedrom-cli to generate wave image 
+To install wavedrom-cli, you can use `num install -g wavedrom_cli` or download manually.
+To let docgen make use of graphviz, you should add `--wavedrom=wavedrom_cli`
 
 ![wave](doc/wave.png)
  
@@ -136,7 +141,9 @@ State machine documentation are also supported, see below:
   * @working->sleeping: transit 4
   */ 
 ```
-Note: @fsm will use graphivz to generate state machine image.
+Note: @fsm will use graphivz to generate state machine image. 
+To install graphviz, you can use `apt-get install graphivz` or download manually.
+To let docgen make use of graphviz, you should add `--graphviz=dot`
 
 ![Image](doc/fsm.png)
  
